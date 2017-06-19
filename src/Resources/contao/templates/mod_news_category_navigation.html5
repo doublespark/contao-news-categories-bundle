@@ -1,0 +1,15 @@
+<!-- indexer::stop -->
+<nav class="<?= $this->class ?> block"<?= $this->cssID ?><?php if ($this->style): ?> style="<?= $this->style ?>"<?php endif; ?> itemscope itemtype="http://schema.org/SiteNavigationElement">
+
+  <?php if ($this->headline): ?>
+    <<?= $this->hl ?>><?= $this->headline ?></<?= $this->hl ?>>
+  <?php endif; ?>
+
+  <ul class="level_1">
+  <?php foreach($this->arrCategories as $category): ?>
+      <li <?php if(!empty($category['class'])) echo 'class="'.$category['class'].'"'; ?>><a itemprop="name" href="<?php echo $category['href']; ?>"><?php echo $category['title']; ?></a></li>
+  <?php endforeach; ?>
+  </ul>
+
+</nav>
+<!-- indexer::continue -->
