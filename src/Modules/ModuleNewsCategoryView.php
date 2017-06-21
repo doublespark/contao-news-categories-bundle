@@ -84,6 +84,11 @@ class ModuleNewsCategoryView extends \ModuleNewsList
             $this->redirectToFrontendPage($this->jumpTo);
         }
 
+        // Overwrite the page title
+        global $objPage;
+        $objPage->pageTitle = strip_tags(\StringUtil::stripInsertTags($objCategory->title));
+
+
         $limit = null;
         $offset = intval($this->skipFirst);
 
