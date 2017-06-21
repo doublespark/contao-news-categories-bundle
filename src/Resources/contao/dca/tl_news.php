@@ -65,6 +65,10 @@ class tl_news_nc extends Backend
         {
             $arrCategories = unserialize($dc->activeRecord->categories);
         }
+        if(is_array($dc->activeRecord->categories))
+        {
+            $arrCategories = $dc->activeRecord->categories;
+        }
 
         $values = array();
         $placeholders = array();
