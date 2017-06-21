@@ -29,15 +29,3 @@ $GLOBALS['FE_MOD']['news']['news_category_navigation'] = 'Doublespark\NewsCatego
  * Models
  */
 $GLOBALS['TL_MODELS']['tl_news_categories'] = 'Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel';
-
-/**
- * Hooks
- */
-//$GLOBALS['TL_HOOKS']['generatePage'][] = array('Doublespark\Hooks\HookGeneratePage','addCanonicalTag');
-
-/**
- * Content elements
- */
-//$GLOBALS['TL_CTE']['links']['boxlink'] = 'Doublespark\Elements\ContentBoxLink';
-//$GLOBALS['TL_CTE']['media']['parallax_section'] = 'Doublespark\Elements\ParallaxSectionElement';
-//$GLOBALS['TL_CTE']['texts']['double_text'] = 'Doublespark\Elements\DoubleTextElement';
