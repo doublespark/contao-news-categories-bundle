@@ -77,7 +77,7 @@ class ModuleNewsCategoryNavigation extends Module
 
                 $arrCategory['href'] = '/'.$jumpToAlias.'/'.$arrCategory['alias'];
 
-                if('/'.$objPage->alias.'/'.$arrCategory['alias'])
+                if('/'.$objPage->alias.'/'.$arrCategory['alias'] == $arrCategory['href'])
                 {
                     $arrCategory['class'] = 'active';
                 }
