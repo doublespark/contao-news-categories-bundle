@@ -1,6 +1,10 @@
 Doublespark news categories bundle
 ==================================
 
+Version 1.0.2 (2017-05-21)
+--------------------------
+- Fix active page check for category navigation
+
 Version 1.0.1 (2017-05-21)
 --------------------------
 - Override page title with category name when viewing category
