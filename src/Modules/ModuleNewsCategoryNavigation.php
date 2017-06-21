@@ -10,6 +10,7 @@
 
 namespace Doublespark\NewsCategoriesBundle\Modules;
 use Contao\Database;
+use Contao\Environment;
 use Contao\Module;
 use Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel;
 
@@ -53,8 +54,6 @@ class ModuleNewsCategoryNavigation extends Module
      */
     protected function compile()
     {
-        global $objPage;
-
         if($this->jumpTo)
         {
             $objJumpToPage = \PageModel::findByPk($this->jumpTo);
@@ -71,13 +70,15 @@ class ModuleNewsCategoryNavigation extends Module
 
         if($objCategories)
         {
+            $currentUrl = Environment::get('requestUri');
+
             while($objCategories->next())
             {
                 $arrCategory = $objCategories->row();
 
                 $arrCategory['href'] = '/'.$jumpToAlias.'/'.$arrCategory['alias'];
 
-                if('/'.$objPage->alias.'/'.$arrCategory['alias'] == $arrCategory['href'])
+                if($currentUrl == $arrCategory['href'])
                 {
                     $arrCategory['class'] = 'active';
                 }
