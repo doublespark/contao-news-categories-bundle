@@ -81,7 +81,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
         }
         else
         {
-            $this->redirectToFrontendPage(3);
+            $this->redirectToFrontendPage($this->jumpTo);
         }
 
         $limit = null;
