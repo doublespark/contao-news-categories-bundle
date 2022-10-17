@@ -18,6 +18,7 @@ use Contao\Input;
 use Contao\ModuleNewsList;
 use Contao\Pagination;
 use Contao\StringUtil;
+use Contao\System;
 use Doublespark\NewsCategoriesBundle\Helpers\NewsModelHelper;
 use Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel;
 
@@ -35,7 +36,7 @@ class ModuleNewsCategoryView extends ModuleNewsList
      */
     public function generate()
     {
-        if (TL_MODE == 'BE')
+        if(System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest(System::getContainer()->get('request_stack')->getCurrentRequest()))
         {
             $objTemplate = new BackendTemplate('be_wildcard');
 
