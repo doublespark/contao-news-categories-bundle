@@ -9,9 +9,11 @@
  */
 
 namespace Doublespark\NewsCategoriesBundle\Modules;
-use Contao\Database;
+
+use Contao\BackendTemplate;
 use Contao\Environment;
 use Contao\Module;
+use Contao\PageModel;
 use Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel;
 
 /**
@@ -34,8 +36,7 @@ class ModuleNewsCategoryNavigation extends Module
     {
         if (TL_MODE == 'BE')
         {
-            /** @var BackendTemplate|object $objTemplate */
-            $objTemplate = new \BackendTemplate('be_wildcard');
+            $objTemplate = new BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = '### NEWS CATEGORY NAVIGATION ###';
             $objTemplate->title = $this->headline;
@@ -56,7 +57,7 @@ class ModuleNewsCategoryNavigation extends Module
     {
         if($this->jumpTo)
         {
-            $objJumpToPage = \PageModel::findByPk($this->jumpTo);
+            $objJumpToPage = PageModel::findByPk($this->jumpTo);
             $jumpToAlias = $objJumpToPage->alias;
         }
         else
