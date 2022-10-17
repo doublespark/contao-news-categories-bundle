@@ -10,16 +10,22 @@
 
 namespace Doublespark\NewsCategoriesBundle\Modules;
 
+use Contao\BackendTemplate;
+use Contao\Config;
 use Contao\CoreBundle\Exception\PageNotFoundException;
+use Contao\Environment;
+use Contao\Input;
+use Contao\ModuleNewsList;
+use Contao\Pagination;
+use Contao\StringUtil;
 use Doublespark\NewsCategoriesBundle\Helpers\NewsModelHelper;
 use Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel;
-use Patchwork\Utf8;
 
 
 /**
  * Front end module "custom news list".
  */
-class ModuleNewsCategoryView extends \ModuleNewsList
+class ModuleNewsCategoryView extends ModuleNewsList
 {
 
     /**
@@ -31,8 +37,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
     {
         if (TL_MODE == 'BE')
         {
-            /** @var BackendTemplate|object $objTemplate */
-            $objTemplate = new \BackendTemplate('be_wildcard');
+            $objTemplate = new BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = '### NEWS CATEGORY VIEW ###';
             $objTemplate->title = $this->headline;
@@ -44,12 +49,12 @@ class ModuleNewsCategoryView extends \ModuleNewsList
         }
 
         // Set the item from the auto_item parameter
-        if (!isset($_GET['items']) && \Config::get('useAutoItem') && isset($_GET['auto_item']))
+        if (!isset($_GET['items']) && Config::get('useAutoItem') && isset($_GET['auto_item']))
         {
-            \Input::setGet('items', \Input::get('auto_item'));
+            Input::setGet('items',Input::get('auto_item'));
         }
 
-        $this->news_archives = $this->sortOutProtected(\StringUtil::deserialize($this->news_archives));
+        $this->news_archives = $this->sortOutProtected(StringUtil::deserialize($this->news_archives));
 
         // Return if there are no archives
         if (!is_array($this->news_archives) || empty($this->news_archives))
@@ -66,7 +71,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
      */
     protected function compile()
     {
-        $categoryAlias = \Input::get('items');
+        $categoryAlias = Input::get('items');
 
         if($categoryAlias)
         {
@@ -74,7 +79,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
 
             if(!$objCategory)
             {
-                throw new PageNotFoundException('Page not found: ' . \Environment::get('uri'));
+                throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
             }
 
             $categoryId = $objCategory->id;
@@ -86,7 +91,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
 
         // Overwrite the page title
         global $objPage;
-        $objPage->pageTitle = strip_tags(\StringUtil::stripInsertTags($objCategory->title));
+        $objPage->pageTitle = strip_tags(StringUtil::stripInsertTags($objCategory->title));
 
 
         $limit = null;
@@ -136,12 +141,12 @@ class ModuleNewsCategoryView extends \ModuleNewsList
 
             // Get the current page
             $id = 'page_n' . $this->id;
-            $page = (\Input::get($id) !== null) ? \Input::get($id) : 1;
+            $page = (Input::get($id) !== null) ? Input::get($id) : 1;
 
             // Do not index or cache the page if the page number is outside the range
             if ($page < 1 || $page > max(ceil($total/$this->perPage), 1))
             {
-                throw new PageNotFoundException('Page not found: ' . \Environment::get('uri'));
+                throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
             }
 
             // Set limit and offset
@@ -156,7 +161,7 @@ class ModuleNewsCategoryView extends \ModuleNewsList
             }
 
             // Add the pagination menu
-            $objPagination = new \Pagination($total, $this->perPage, \Config::get('maxPaginationLinks'), $id);
+            $objPagination = new Pagination($total, $this->perPage, Config::get('maxPaginationLinks'), $id);
             $this->Template->pagination = $objPagination->generate("\n  ");
         }
 
