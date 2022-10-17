@@ -11,13 +11,9 @@
 /**
  * Back end modules
  */
-array_insert($GLOBALS['BE_MOD']['content'], 2, array
-(
-    'news_categories' => array
-    (
-        'tables' => array('tl_news_categories')
-    )
-));
+$GLOBALS['BE_MOD']['content']['news_categories'] = [
+    'tables' => ['tl_news_categories']
+];
 
 /**
  * Frontend modules
