@@ -1,15 +1,9 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (c) 2005-2017 Leo Feyer
- *
- * @license LGPL-3.0+
- */
+use Contao\DC_Table;
 
 /**
- * Table tl_news
+ * Table tl_news_categories
  */
 $GLOBALS['TL_DCA']['tl_news_categories'] = array
 (
@@ -17,7 +11,7 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 	// Config
 	'config' => array
 	(
-		'dataContainer' => 'Table',
+		'dataContainer' => DC_Table::class,
 		'sql' => array
 		(
 			'keys' => array
@@ -45,7 +39,6 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 		(
 			'all' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['MSC']['all'],
 				'href'                => 'act=select',
 				'class'               => 'header_edit_all',
 				'attributes'          => 'onclick="Backend.getScrollOffset()" accesskey="e"'
@@ -55,32 +48,27 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 		(
 			'edit' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['tl_news_categories']['edit'],
 				'href'                => 'table=tl_content',
 				'icon'                => 'edit.svg'
 			),
 			'copy' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['tl_news_categories']['copy'],
 				'href'                => 'act=paste&amp;mode=copy',
 				'icon'                => 'copy.svg'
 			),
 			'cut' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['tl_news_categories']['cut'],
 				'href'                => 'act=paste&amp;mode=cut',
 				'icon'                => 'cut.svg'
 			),
 			'delete' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['tl_news_categories']['delete'],
 				'href'                => 'act=delete',
 				'icon'                => 'delete.svg',
 				'attributes'          => 'onclick="if(!confirm(\'' . $GLOBALS['TL_LANG']['MSC']['deleteConfirm'] . '\'))return false;Backend.getScrollOffset()"'
 			),
 			'show' => array
 			(
-				'label'               => &$GLOBALS['TL_LANG']['tl_news_categories']['show'],
 				'href'                => 'act=show',
 				'icon'                => 'show.svg'
 			)
@@ -106,7 +94,6 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
         ),
 		'title' => array
 		(
-			'label'                   => &$GLOBALS['TL_LANG']['tl_news_categories']['title'],
 			'exclude'                 => true,
 			'search'                  => true,
 			'sorting'                 => true,
@@ -117,63 +104,11 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 		),
 		'alias' => array
 		(
-			'label'                   => &$GLOBALS['TL_LANG']['tl_news_categories']['alias'],
 			'exclude'                 => true,
 			'search'                  => true,
 			'inputType'               => 'text',
 			'eval'                    => array('rgxp'=>'alias', 'unique'=>true, 'maxlength'=>128, 'tl_class'=>'w50 clr'),
-			'save_callback' => array
-			(
-				array('tl_news_categories', 'generateAlias')
-			),
-			'sql' => "varchar(128) COLLATE utf8_bin NOT NULL default ''"
+			'sql'                     => "varchar(128) NOT NULL default ''"
 		)
 	)
 );
-
-
-/**
- * Provide miscellaneous methods that are used by the data configuration array.
- */
-class tl_news_categories extends Backend
-{
-
-	/**
-	 * Auto-generate the news alias if it has not been set yet
-	 *
-	 * @param mixed         $varValue
-	 * @param DataContainer $dc
-	 *
-	 * @return string
-	 *
-	 * @throws Exception
-	 */
-	public function generateAlias($varValue, DataContainer $dc)
-	{
-		$autoAlias = false;
-
-		// Generate alias if there is none
-		if ($varValue == '')
-		{
-			$autoAlias = true;
-			$varValue = StringUtil::generateAlias($dc->activeRecord->title);
-		}
-
-		$objAlias = $this->Database->prepare("SELECT id FROM tl_news_categories WHERE alias=?")
-								   ->execute($varValue);
-
-		// Check whether the news alias exists
-		if ($objAlias->numRows > 1 && !$autoAlias)
-		{
-			throw new Exception(sprintf($GLOBALS['TL_LANG']['ERR']['aliasExists'], $varValue));
-		}
-
-		// Add ID to alias
-		if ($objAlias->numRows && $autoAlias)
-		{
-			$varValue .= '-' . $dc->id;
-		}
-
-		return $varValue;
-	}
-}

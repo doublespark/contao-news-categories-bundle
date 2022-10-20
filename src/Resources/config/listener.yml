@@ -1,0 +1,10 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  # Autoconfigure classes
+  Doublespark\NewsCategoriesBundle\:
+    resource: '../../../src/*'
+    exclude:
+      - '../../../src/Resources'

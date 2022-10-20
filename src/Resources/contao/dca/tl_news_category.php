@@ -1,12 +1,6 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (c) 2005-2017 Leo Feyer
- *
- * @license LGPL-3.0+
- */
+use Contao\DC_Table;
 
 /**
  * Table tl_news_category
@@ -17,7 +11,7 @@ $GLOBALS['TL_DCA']['tl_news_category'] = array
 	// Config
 	'config' => array
 	(
-		'dataContainer' => 'Table',
+		'dataContainer' => DC_Table::class,
 		'sql' => array
 		(
 			'keys' => array

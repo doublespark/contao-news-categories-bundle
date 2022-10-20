@@ -18,5 +18,8 @@
     "psr-4": {
       "Doublespark\\NewsCategoriesBundle\\": "src/"
     }
+  },
+  "extra": {
+    "contao-manager-plugin": "Doublespark\\NewsCategoriesBundle\\ContaoManager\\Plugin"
   }
 }
