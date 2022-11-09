@@ -1,66 +1,38 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (c) 2005-2017 Leo Feyer
- *
- * @license LGPL-3.0+
- */
-
 namespace Doublespark\NewsCategoriesBundle\Helpers;
 
-use Model\Collection;
+use Contao\Database;
+use Contao\Date;
+use Contao\Model\Collection;
+use Contao\NewsModel;
 
-/**
- * Class NewsModelHelper
- * @package Doublespark\NewsCategoriesBundle\Models
- */
-class NewsModelHelper
+class NewsModelHelper extends NewsModel
 {
-    /**
-     * Fetch news stories by PID and category
-     * @param $categoryId
-     * @param $arrPids
-     * @param int $intLimit
-     * @param int $intOffset
-     * @return null|static
-     */
-    public static function findPublishedByCategoryAndPids($categoryId, $arrPids, $blnFeatured, $intLimit=0, $intOffset=0)
+    public static function findPublishedByCategoryAndPids(int $categoryId, $arrPids, $blnFeatured=null, $intLimit=0, $intOffset=0)
     {
-        if (!is_array($arrPids))
+        if (empty($arrPids) || !\is_array($arrPids))
         {
             return null;
         }
 
-        // Verify all IDs are numeric
-        foreach($arrPids as $k => $v)
-        {
-            if(!is_numeric($v))
-            {
-                unset($arrPids[$k]);
-            }
-        }
+        $t = static::$strTable;
 
-        if(count($arrPids) < 1)
-        {
-            return null;
-        }
+        $time = Date::floorToMinute();
 
-        // Build SQL
-        $sql = "SELECT * FROM tl_news
-                INNER JOIN tl_news_category ON tl_news.id = tl_news_category.news_id
-                WHERE pid IN(".implode(',',$arrPids).")
-                AND category_id = ?
-                AND published=1";
+        $sql = "SELECT * FROM $t
+                INNER JOIN tl_news_category ON $t.id = tl_news_category.news_id
+                WHERE $t.pid IN(" . implode(',', array_map('\intval', $arrPids)) . ")
+                AND category_id=?
+                AND $t.published=1 AND ($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'$time')";
 
         if ($blnFeatured === true)
         {
-            $sql .= " tl_news.featured='1'";
+            $sql .= " $t.featured='1'";
         }
         elseif ($blnFeatured === false)
         {
-            $sql .= " tl_news.featured=''";
+            $sql .= " $t.featured=''";
         }
 
         // Ordering
@@ -78,60 +50,43 @@ class NewsModelHelper
             $sql .= " OFFSET $intOffset";
         }
 
-        $objResult = \Database::getInstance()->prepare($sql)->execute($categoryId);
+        $objResult = Database::getInstance()->prepare($sql)->execute($categoryId);
 
-        if($objResult->numRows < 1)
+        if(!$objResult)
         {
             return null;
         }
 
-        return Collection::createFromDbResult($objResult, 'tl_news');
+        return Collection::createFromDbResult($objResult, $t);
     }
 
-    /**
-     * Count news stories by PID and category
-     * @param $categoryId
-     * @param $arrPids
-     * @return null|static
-     */
-    public static function countPublishedByCategoryAndPids($categoryId, $arrPids, $blnFeatured)
+    public static function countPublishedByCategoryAndPids(int $categoryId, $arrPids, $blnFeatured=null)
     {
-        if (!is_array($arrPids))
+        if (empty($arrPids) || !\is_array($arrPids))
         {
-            return null;
+            return 0;
         }
 
-        // Verify all IDs are numeric
-        foreach($arrPids as $k => $v)
-        {
-            if(!is_numeric($v))
-            {
-                unset($arrPids[$k]);
-            }
-        }
+        $t = static::$strTable;
 
-        if(count($arrPids) < 1)
-        {
-            return null;
-        }
+        $time = Date::floorToMinute();
 
-        // Build SQL
-        $sql = "SELECT COUNT(*) AS count FROM tl_news
-                INNER JOIN tl_news_category ON tl_news.id = tl_news_category.news_id
-                WHERE pid IN(".implode(',',$arrPids).")
-                AND category_id = ?
-                AND published=1";
+        $sql = "SELECT COUNT(*) AS count FROM $t
+                INNER JOIN tl_news_category ON $t.id = tl_news_category.news_id
+                WHERE $t.pid IN(" . implode(',', array_map('\intval', $arrPids)) . ")
+                AND category_id=?
+                AND $t.published=1 AND ($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'$time')";
 
         if ($blnFeatured === true)
         {
-            $sql .= " tl_news.featured='1'";
+            $sql .= " $t.featured='1'";
         }
         elseif ($blnFeatured === false)
         {
-            $sql .= " tl_news.featured=''";
+            $sql .= " $t.featured=''";
         }
 
-        $objResult = \Database::getInstance()->prepare($sql)->execute($categoryId);
+        $objResult = Database::getInstance()->prepare($sql)->execute($categoryId);
 
         return $objResult->count;
     }

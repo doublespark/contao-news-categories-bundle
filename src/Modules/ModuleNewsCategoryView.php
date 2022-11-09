@@ -1,33 +1,22 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (c) 2005-2017 Leo Feyer
- *
- * @license LGPL-3.0+
- */
-
 namespace Doublespark\NewsCategoriesBundle\Modules;
 
 use Contao\BackendTemplate;
-use Contao\Config;
 use Contao\CoreBundle\Exception\PageNotFoundException;
+use Contao\CoreBundle\Routing\ResponseContext\HtmlHeadBag\HtmlHeadBag;
 use Contao\Environment;
 use Contao\Input;
+use Contao\Model\Collection;
 use Contao\ModuleNewsList;
-use Contao\Pagination;
-use Contao\StringUtil;
+use Contao\NewsModel;
 use Contao\System;
 use Doublespark\NewsCategoriesBundle\Helpers\NewsModelHelper;
 use Doublespark\NewsCategoriesBundle\Models\NewsCategoriesModel;
 
-
-/**
- * Front end module "custom news list".
- */
 class ModuleNewsCategoryView extends ModuleNewsList
 {
+    protected int $categoryId = 0;
 
     /**
      * Display a wildcard in the back end
@@ -50,156 +39,65 @@ class ModuleNewsCategoryView extends ModuleNewsList
         }
 
         // Set the item from the auto_item parameter
-        if (!isset($_GET['items']) && Config::get('useAutoItem') && isset($_GET['auto_item']))
+        $categoryAlias = Input::get('auto_item');
+
+        $objNewsCategory = NewsCategoriesModel::findByIdOrAlias($categoryAlias);
+
+        if($objNewsCategory)
         {
-            Input::setGet('items',Input::get('auto_item'));
+            $this->categoryId = $objNewsCategory->id;
+
+            // Overwrite the page metadata
+            $responseContext = System::getContainer()->get('contao.routing.response_context_accessor')->getResponseContext();
+
+            if ($responseContext && $responseContext->has(HtmlHeadBag::class))
+            {
+                /** @var HtmlHeadBag $htmlHeadBag */
+                $htmlHeadBag = $responseContext->get(HtmlHeadBag::class);
+                $htmlDecoder = System::getContainer()->get('contao.string.html_decoder');
+
+                $htmlHeadBag->setTitle('News Category - '.$htmlDecoder->inputEncodedToPlainText($objNewsCategory->title));
+
+                if($objNewsCategory->description)
+                {
+                    $htmlHeadBag->setMetaDescription($htmlDecoder->inputEncodedToPlainText($objNewsCategory->description));
+                }
+            }
         }
-
-        $this->news_archives = $this->sortOutProtected(StringUtil::deserialize($this->news_archives));
-
-        // Return if there are no archives
-        if (!is_array($this->news_archives) || empty($this->news_archives))
+        else
         {
-            return '';
+            // Category does not exist
+            throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
         }
 
         return parent::generate();
     }
 
-
     /**
-     * Generate the module
+     * Count the total matching items
+     *
+     * @param array   $newsArchives
+     * @param boolean $blnFeatured
+     *
+     * @return integer
      */
-    protected function compile()
+    protected function countItems($newsArchives, $blnFeatured): int
     {
-        $categoryAlias = Input::get('items');
-
-        if($categoryAlias)
-        {
-            $objCategory = NewsCategoriesModel::findOneBy('alias',$categoryAlias);
-
-            if(!$objCategory)
-            {
-                throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
-            }
-
-            $categoryId = $objCategory->id;
-        }
-        else
-        {
-            $this->redirectToFrontendPage($this->jumpTo);
-        }
-
-        // Overwrite the page title
-        global $objPage;
-        $objPage->pageTitle = strip_tags(StringUtil::stripInsertTags($objCategory->title));
-
-
-        $limit = null;
-        $offset = intval($this->skipFirst);
-
-        // Maximum number of items
-        if ($this->numberOfItems > 0)
-        {
-            $limit = $this->numberOfItems;
-        }
-
-        // Handle featured news
-        if ($this->news_featured == 'featured')
-        {
-            $blnFeatured = true;
-        }
-        elseif ($this->news_featured == 'unfeatured')
-        {
-            $blnFeatured = false;
-        }
-        else
-        {
-            $blnFeatured = null;
-        }
-
-        $this->Template->articles = array();
-        $this->Template->empty    = $GLOBALS['TL_LANG']['MSC']['emptyList'];
-
-        // Get the total number of items
-        $intTotal = $this->countNewsItems($this->news_archives, $categoryId, $blnFeatured);
-
-        if ($intTotal < 1)
-        {
-            return;
-        }
-
-        $total = $intTotal - $offset;
-
-        // Split the results
-        if ($this->perPage > 0 && (!isset($limit) || $this->numberOfItems > $this->perPage))
-        {
-            // Adjust the overall limit
-            if (isset($limit))
-            {
-                $total = min($limit, $total);
-            }
-
-            // Get the current page
-            $id = 'page_n' . $this->id;
-            $page = (Input::get($id) !== null) ? Input::get($id) : 1;
-
-            // Do not index or cache the page if the page number is outside the range
-            if ($page < 1 || $page > max(ceil($total/$this->perPage), 1))
-            {
-                throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
-            }
-
-            // Set limit and offset
-            $limit = $this->perPage;
-            $offset += (max($page, 1) - 1) * $this->perPage;
-            $skip = intval($this->skipFirst);
-
-            // Overall limit
-            if ($offset + $limit > $total + $skip)
-            {
-                $limit = $total + $skip - $offset;
-            }
-
-            // Add the pagination menu
-            $objPagination = new Pagination($total, $this->perPage, Config::get('maxPaginationLinks'), $id);
-            $this->Template->pagination = $objPagination->generate("\n  ");
-        }
-
-        $objArticles = $this->fetchNewsItems($this->news_archives, $categoryId, $blnFeatured, ($limit ?: 0), $offset);
-
-        // Add the articles
-        if ($objArticles !== null)
-        {
-            $this->Template->articles = $this->parseArticles($objArticles);
-        }
-
-        $this->Template->archives = $this->news_archives;
+        return NewsModelHelper::countPublishedByCategoryAndPids($this->categoryId, $newsArchives, $blnFeatured);
     }
 
-
     /**
-     * Count items
-     * @param $newsArchives
-     * @param $categoryId
-     * @return null|static
+     * Fetch the matching items
+     *
+     * @param array   $newsArchives
+     * @param boolean $blnFeatured
+     * @param integer $limit
+     * @param integer $offset
+     *
+     * @return Collection|NewsModel|null
      */
-    protected function countNewsItems($newsArchives, $categoryId, $blnFeatured)
+    protected function fetchItems($newsArchives, $blnFeatured, $limit, $offset)
     {
-        return NewsModelHelper::countPublishedByCategoryAndPids($categoryId, $newsArchives, $blnFeatured);
-    }
-
-
-    /**
-     * Fetch items
-     * @param $newsArchives
-     * @param $categoryId
-     * @param $limit
-     * @param $offset
-     * @return null|static
-     */
-    protected function fetchNewsItems($newsArchives, $categoryId, $blnFeatured, $limit, $offset)
-    {
-        return NewsModelHelper::findPublishedByCategoryAndPids($categoryId, $newsArchives, $blnFeatured, $limit, $offset);
+        return NewsModelHelper::findPublishedByCategoryAndPids($this->categoryId, $newsArchives, $blnFeatured, $limit, $offset);
     }
 }
