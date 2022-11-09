@@ -5,6 +5,7 @@
  */
 $GLOBALS['TL_LANG']['tl_news_categories']['title'] = array('Name', 'The name of this category.');
 $GLOBALS['TL_LANG']['tl_news_categories']['alias'] = array('Alias', 'The URL alias of this category. Leave blank to auto-generate.');
+$GLOBALS['TL_LANG']['tl_news_categories']['description'] = array('Description', 'The description of this category.');
 
 /**
  * Legends

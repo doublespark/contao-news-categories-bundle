@@ -7,7 +7,6 @@ use Contao\DC_Table;
  */
 $GLOBALS['TL_DCA']['tl_news_categories'] = array
 (
-
 	// Config
 	'config' => array
 	(
@@ -48,7 +47,7 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 		(
 			'edit' => array
 			(
-				'href'                => 'table=tl_content',
+				'href'                => 'act=edit',
 				'icon'                => 'edit.svg'
 			),
 			'copy' => array
@@ -78,7 +77,7 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 	// Palettes
 	'palettes' => array
 	(
-		'default' => '{details_legend},title,alias;'
+		'default' => '{details_legend},title,alias,description;'
 	),
 
 	// Fields
@@ -109,6 +108,13 @@ $GLOBALS['TL_DCA']['tl_news_categories'] = array
 			'inputType'               => 'text',
 			'eval'                    => array('rgxp'=>'alias', 'unique'=>true, 'maxlength'=>128, 'tl_class'=>'w50 clr'),
 			'sql'                     => "varchar(128) NOT NULL default ''"
-		)
+		),
+        'description' => array
+        (
+            'search'                  => true,
+            'inputType'               => 'textarea',
+            'eval'                    => array('rte'=>'tinyMCE', 'tl_class'=>'clr'),
+            'sql'                     => "text NULL"
+        )
 	)
 );
