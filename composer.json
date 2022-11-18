@@ -1,6 +1,6 @@
 {
   "name": "doublespark/contao-news-categories-bundle",
-  "type": "contao-bundle",
+  "type": "ds-contao-bundle",
   "description": "Adds categories to the Contao news bundle",
   "license": "LGPL-3.0+",
   "authors": [
