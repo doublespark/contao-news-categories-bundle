@@ -41,6 +41,11 @@ class ModuleNewsCategoryView extends ModuleNewsList
         // Set the item from the auto_item parameter
         $categoryAlias = Input::get('auto_item');
 
+        if(empty($categoryAlias))
+        {
+            throw new PageNotFoundException('Page not found: ' . Environment::get('uri'));
+        }
+
         $objNewsCategory = NewsCategoriesModel::findByIdOrAlias($categoryAlias);
 
         if($objNewsCategory)
