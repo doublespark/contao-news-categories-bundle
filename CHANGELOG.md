@@ -1,5 +1,8 @@
 # Change log
 
+## Version 1.1.1 (2025-10-24)
+- Throw 404 on empty auto_item in category reader
+
 ## Version 1.1.0 (2022-11-18)
 - Update for Contao 5
 
